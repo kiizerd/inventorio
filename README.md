@@ -29,12 +29,12 @@
  - UI  
  <-- Powered by Nukleus -->
   - Entry window
-    - simple start menu
+    - simple start menu    - complete
     - has buttons for:
-      - new inv.
-      - load inv.
-      - connect to inv.
-      - configure settings
+      - new inv.           - complete
+      - load inv.          - complete
+      - connect to inv.    - complete
+      - configure settings - complete
 
   - Product View window
     - shows detailed info for product
@@ -61,9 +61,19 @@
     - shows all products and inv. details
     - has buttons for:
       - host inv.
-      - configure inv. settings
-      - add product
+      - hosted inv. settings
+      - stop hosting
+      
+      - search products
       - show tag view window
+
+      - CRUD product buttons
+
+      - FUTURE BUTTONS
+        - clone product
+        - skew product
+        - configure inv. settings
+        
     - nice looking, clean, product list
       - product right click menu
       - double click product menu shows product view window
