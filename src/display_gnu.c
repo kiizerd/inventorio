@@ -38,6 +38,9 @@
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
 #include "nk_windows.c"
+#include "style.c"
+
+// #include "../crap/overview.c"
 
 /* ===============================================================
  *
@@ -80,6 +83,7 @@ int main(void)
         exit(1);
     }
 
+    /* Font and Theme */
     ctx = nk_glfw3_init(&glfw, win, NK_GLFW3_INSTALL_CALLBACKS);
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
@@ -95,7 +99,12 @@ int main(void)
     /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
     // nk_style_set_font(&ctx, &font->handle);
 
+    set_style(ctx, THEME_RED);
+
     bg.r = 0.10f, bg.g = 0.18f, bg.b = 0.24f, bg.a = 1.0f;
+    
+    /* Icons */
+    struct inv_icons icons = init_inv_icons(ctx);
 
     while (!glfwWindowShouldClose(win))
     {
@@ -105,6 +114,7 @@ int main(void)
 
         /* GUI */
 		init_gui_windows(ctx);
+        // overview(ctx);
 
         /* Draw */
         glfwGetWindowSize(win, &width, &height);
@@ -119,6 +129,19 @@ int main(void)
         nk_glfw3_render(&glfw, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
         glfwSwapBuffers(win);
     }
+
+    glDeleteTextures(1,(const GLuint*)&icons.server_host.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.server_config.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.server_close.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.search_prods.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.view_tags.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.create_prod.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.view_tags.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.edit_prod.handle.id);
+    glDeleteTextures(1,(const GLuint*)&icons.delete_prod.handle.id);
+
+    nk_free(ctx);
+
     nk_glfw3_shutdown(&glfw);
     glfwTerminate();
     return 0;
