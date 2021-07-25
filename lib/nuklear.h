@@ -5567,6 +5567,21 @@ struct nk_pool {
     nk_size cap;
 };
 
+// CUSTOM STRUCT
+struct inv_icons {
+  struct nk_image server_host;
+  struct nk_image server_config;
+  struct nk_image server_close;
+
+  struct nk_image search_prods;
+  struct nk_image view_tags;
+
+  struct nk_image create_prod;
+  struct nk_image view_prod;
+  struct nk_image edit_prod;
+  struct nk_image delete_prod;
+};
+
 struct nk_context {
 /* public: can be accessed freely */
     struct nk_input input;
@@ -5577,6 +5592,9 @@ struct nk_context {
     enum nk_button_behavior button_behavior;
     struct nk_configuration_stacks stacks;
     float delta_time_seconds;
+
+    // custom members for inventorio
+    struct inv_icons icons;
 
 /* private:
     should only be accessed if you
