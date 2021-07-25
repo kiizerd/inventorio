@@ -24,9 +24,6 @@ typedef tag_catalog t_ctg;
 typedef char pdt_tag_catalog[PDT_TAGS_MAX][TAGS_LEN];
 typedef pdt_tag_catalog p_t_ctg;
 
-typedef char PDTID[ID_LEN];
-
-
 /* Product structure
  * 
  * char   title[TITLE_MAX]
@@ -38,26 +35,17 @@ typedef char PDTID[ID_LEN];
  * struct pdt_tags tags
  */
 struct inv_product {
-  char    title[TITLE_MAX];
-  char    description[DESC_MAX];
-  float   price;
-  ushort  quantity;
+  char    *title;
+  char    *description;
+  char    *id;
+  char    *price;
+  char    *quantity;
   ushort  numSold;
-  p_t_ctg tags;
+  p_t_ctg *tags;
   ushort  tag_count;
-  PDTID   id;
 };
 
 typedef struct inv_product inv_pdt;
-
-struct pdt_catalog {
-  inv_pdt *products[PRODUCTS_MAX];
-  PDTID   pdt_ids[PRODUCTS_MAX];
-  ushort  pdt_qnt[PRODUCTS_MAX];
-  ushort  count;
-};
-
-typedef struct pdt_catalog p_ctg;
 
 /* Inventory struct
  * 
@@ -70,120 +58,120 @@ typedef struct pdt_catalog p_ctg;
  * 
 */
 struct inv_inventory {
-  char    name[TITLE_MAX];
-  inv_pdt products[PRODUCTS_MAX];
-  p_ctg   catalog;
-  ushort  pdt_count;
-  t_ctg   tags;
+  char    *name;
+  t_ctg   *tags;
   ushort  tag_count;
+  inv_pdt **products;
+  ushort  pdt_count;
 };
 
-
-// const static struct inv_inventory *inv_catalog[];
-
-INV_API char * inv_generate_pdtid
-(struct inv_inventory *inv_p, char *title)
+INV_API char *
+inv_generate_pdtid(struct inv_inventory *inv_p, char *title)
 {
-  int id_check = 1;
-  char *id_str_p, id_string[ID_LEN];
-  struct inv_inventory inv = *inv_p;
-  do {
-    int i, j;
-    id_str_p = id_string;
+  char *id;
+  id = malloc(ID_LEN * sizeof(char));
 
-    id_string[0] = title[0];
-    id_string[1] = title[2];
+  id[0] = title[0];
+  id[1] = title[2];
 
-    for (i = 0; i < ID_LEN - 1; i++) {
-      id_string[i + 2] = (rand() % 9) + '0';
-    }
+  int i;
+  for (i = 0; i < ID_LEN - 3; i++) {
+    id[i + 2] = (rand() % 9) + '0';
+  }
 
-    int count = (int)&inv.catalog.count;
-    for (j = 0; j < count; j++) {
-      if (strcmp(id_string, inv.catalog.pdt_ids[j]) == 0) {
-        id_check = 0;
-        printf("generated id matches existing id, regenerating");
-      }
-    }
-  
-  } while (id_check);
+  id[ID_LEN] = '\0';
 
-  return id_str_p;
+  return id;
+}
+
+INV_API struct inv_inventory * get_active_inv() {
+  struct inv_inventory *inv;
+  return inv;
 }
 
 // All functions below this point will perform an operation on an inventory struct or its constituents
 
 static struct inv_inventory *active_inv;
 
-INV_API void inv_add_product_to_inv
+INV_API void
+inv_add_product_to_inv
 (struct inv_inventory *inv_p, struct inv_product *pdt_p)
-{  
-  struct inv_inventory inv = *inv_p;
-  struct inv_product pdt   = *pdt_p;
-  memcpy(&inv.products[inv.pdt_count], pdt_p, sizeof(*pdt_p));
-  memcpy(&inv.catalog.pdt_ids[inv.pdt_count++], &pdt.id, sizeof pdt.id);
-  inv.catalog.pdt_qnt[inv.pdt_count] = pdt.quantity;
-
-  inv.pdt_count++;
-
-  int i;
-  for (i = 0; i < inv.pdt_count; i++) {
-    printf("Product title: %s\nProduct description: %s\n", inv.products[i].title, inv.products[i].description);
-  }
-}
-
-INV_API void inv_create_product
-(char *title, char *desc, struct pdt_tags *tags_p, float price, int quantity)
-{  
-  struct inv_inventory inv = *active_inv;
-  struct inv_product pdt;
-  
-  strcpy(pdt.title, title ? title : "new_product");
-
-  strcpy(pdt.description, desc ? desc : "n/a");
-
-  PDTID *new_pdt_id = inv_generate_pdtid(&inv, pdt.title);
-  strcpy(pdt.id, new_pdt_id);
-
-  // TODO - loop thru tags and strcpy all
-  if (tags_p) {
-    1;
-  }
-
-  pdt.quantity = quantity ? quantity : 0;
-  pdt.price    = price    ? price    : 5.0F;
-  pdt.numSold  = 0;
-
-  inv_add_product_to_inv(&inv, &pdt);
-}
-
-// TODO - write created inventory to disk/database
-INV_API void inv_create_inventory
-(struct nk_context *ctx, char *title, char tags[TAGS_MAX][TAGS_LEN], int tag_count)
 {
-  struct inv_inventory new_inv;
+  int count = inv_p->pdt_count;
 
-  strcpy(new_inv.name, title);
+  memcpy(inv_p->products[count], pdt_p, sizeof(struct inv_product));
+
+  inv_p->pdt_count += 1;
+}
+
+INV_API void
+inv_create_product
+(char *title, char *price, char *quant, char *desc, char tags[TAGS_MAX][TAGS_LEN], int tag_count)
+{
+  struct inv_product *
+  pdt_p              = (struct inv_product*)malloc(sizeof(struct inv_product));
+  pdt_p->title       = (char *)malloc(TITLE_MAX * sizeof(char));
+  pdt_p->description = (char *)malloc(DESC_MAX  * sizeof(char));
+  pdt_p->price       = (char *)malloc(12        * sizeof(char));
+  pdt_p->quantity    = (char *)malloc(12        * sizeof(char));
+  pdt_p->id          = (char *)malloc(14        * sizeof(char));
+  pdt_p->tags        = (p_t_ctg *)malloc(sizeof(pdt_tag_catalog));
+
+  char *pdt_id = inv_generate_pdtid(active_inv, title);
+
+  strcpy(pdt_p->title, title);
+  strcpy(pdt_p->description, desc);
+  strcpy(pdt_p->price, price);
+  strcpy(pdt_p->quantity, quant);
+  strcpy(pdt_p->id, pdt_id);
+
+  pdt_p->numSold  = 0;
 
   int i;
   for (i = 0; i < tag_count; i++) {
-    strcpy(new_inv.tags[i], tags[i]);
+    strcpy(pdt_p->tags[i], tags[i]);
   }
 
-  new_inv.tag_count = tag_count;
+  pdt_p->tag_count = tag_count;
 
-  active_inv = &new_inv;
+  struct inv_inventory *inv = get_active_inv();
+  inv_add_product_to_inv(active_inv, pdt_p);
+}
 
-  nk_hide_window(ctx, "New Inventory");
+// TODO - write created inventory to disk/database
+INV_API void
+inv_create_inventory
+(char *name, char tags[TAGS_MAX][TAGS_LEN], int tag_count)
+{
+  struct inv_inventory *inv_p = (struct inv_inventory*)malloc(sizeof(struct inv_inventory));
+  inv_p->products = malloc(PRODUCTS_MAX * sizeof(struct inv_product));
+  inv_p->tags     = malloc(sizeof(tag_catalog));
 
+  int i;
+  for (i = 0; i < PRODUCTS_MAX; i++) {
+    inv_p->products[i] = (struct inv_product*)malloc(sizeof(struct inv_product));
+  }
+  inv_p->pdt_count = 0;
+
+  inv_p->name = malloc(TITLE_MAX * sizeof(char));
+  strcpy(inv_p->name, name);
+
+  for (i = 0; i < tag_count; i++) {
+    strcpy(inv_p->tags[i], tags[i]);
+  }
+
+  inv_p->tag_count = tag_count;
+
+  active_inv = inv_p;
   // write inventory to disk/database
 }
 
-INV_API void inv_open_inv_from_file()
+INV_API void
+inv_open_inv_from_file()
 {
-#ifdef _WIN32
-      open_file_browser(wnd);
-#elif defined __linux__
-      int doplhin = system("dolphin --new-window");
-#endif
+  #ifdef _WIN32
+    open_file_browser(wnd);
+  #elif defined __linux__
+    int doplhin = system("dolphin --new-window");
+  #endif
 }
