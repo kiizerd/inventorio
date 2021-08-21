@@ -233,7 +233,8 @@ init_inventory_view_window(struct nk_context *ctx, struct inv_inventory *inv)
 
       /* Column headers */
       {
-        int sort_by[5];
+        static int sort_by[5] = {nk_true, nk_false, nk_false, nk_false, nk_false};
+        int desc_sort = 0;
 
         nk_layout_row(ctx, NK_STATIC, 16, 6, col_ratio);
         if (nk_selectable_label(ctx, "Title", NK_TEXT_ALIGN_CENTERED, &sort_by[0]))
@@ -253,11 +254,7 @@ init_inventory_view_window(struct nk_context *ctx, struct inv_inventory *inv)
           1;
         }
         if (nk_selectable_label(ctx, "ID", NK_TEXT_ALIGN_CENTERED, &sort_by[4]))
-        {
-          1;
-        }
-        int empty = 0;
-        if (nk_selectable_label(ctx, "Desc.", NK_TEXT_ALIGN_CENTERED, &empty))
+        if (nk_selectable_label(ctx, "Desc.", NK_TEXT_ALIGN_CENTERED, &desc_sort))
         {
           1;
         }
@@ -516,17 +513,19 @@ init_new_product_window(struct nk_context *ctx)
     nk_layout_row_static(ctx, 25, 233, 1);
     if (nk_button_label(ctx, "Create Product"))
     {
-
       // TODO - validate form where needed
 
       inv_create_product(props[0], props[1], props[2], props[3], tags_buffer, tag_count);
       nk_hide_window(ctx, "New Product");
 
       // Reset form after creation
-      int i;
+      int i, j;
       for (i = 0; i < 4; i++) {
-        prop_len[i] = 0;
+        for (j = 0; j < strlen(props[i]); j++) {
+          props[i][j] = ' ';
+        }
         tags_len = 0;
+        prop_len[i] = 0;
       }
       tag_count = 0;
     }
