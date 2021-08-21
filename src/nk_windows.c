@@ -135,7 +135,7 @@ init_inventory_view_window(struct nk_context *ctx, struct inv_inventory *inv)
   struct nk_image delete_prod = ctx->icons.delete_prod;
 
   struct
-      nk_rect inv_wnd_nk_rect = nk_rect(INV_WND_OFFSET_X, INV_WND_OFFSET_Y, INV_WND_WIDTH, INV_WND_HEIGHT);
+  nk_rect  inv_wnd_nk_rect  = nk_rect(INV_WND_OFFSET_X, INV_WND_OFFSET_Y, INV_WND_WIDTH, INV_WND_HEIGHT);
   nk_flags inv_wnd_nk_flags = NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE;
   if (nk_begin(ctx, "Inventory View", inv_wnd_nk_rect, inv_wnd_nk_flags))
   {
@@ -233,8 +233,7 @@ init_inventory_view_window(struct nk_context *ctx, struct inv_inventory *inv)
 
       /* Column headers */
       {
-        static int sort_by[5] = {nk_true, nk_false, nk_false, nk_false, nk_false};
-        int desc_sort = 0;
+        static int sort_by[6] = {nk_true, nk_false, nk_false, nk_false, nk_false, nk_false};
 
         nk_layout_row(ctx, NK_STATIC, 16, 6, col_ratio);
         if (nk_selectable_label(ctx, "Title", NK_TEXT_ALIGN_CENTERED, &sort_by[0]))
@@ -254,7 +253,10 @@ init_inventory_view_window(struct nk_context *ctx, struct inv_inventory *inv)
           1;
         }
         if (nk_selectable_label(ctx, "ID", NK_TEXT_ALIGN_CENTERED, &sort_by[4]))
-        if (nk_selectable_label(ctx, "Desc.", NK_TEXT_ALIGN_CENTERED, &desc_sort))
+        {
+          1;
+        }
+        if (nk_selectable_label(ctx, "Desc.", NK_TEXT_ALIGN_CENTERED, &sort_by[5]))
         {
           1;
         }
@@ -511,7 +513,7 @@ init_new_product_window(struct nk_context *ctx)
     }
 
     nk_layout_row_static(ctx, 25, 233, 1);
-    if (nk_button_label(ctx, "Create Product"))
+    if (nk_button_label(ctx, "Create Product") && (prop_len[0] > 3) && (tag_count >= 1))
     {
       // TODO - validate form where needed
 
@@ -524,9 +526,16 @@ init_new_product_window(struct nk_context *ctx)
         for (j = 0; j < strlen(props[i]); j++) {
           props[i][j] = ' ';
         }
-        tags_len = 0;
         prop_len[i] = 0;
       }
+
+      for (i = 0; i < tag_count; i++) {
+        // TODO - tags being pasted if old ones are longer than new ones.
+        for (j = 0; j < strlen(tags_buffer[i]); j++) {
+          tags_buffer[i][j] = ' ';
+        }
+      }
+      tags_len = 0;
       tag_count = 0;
     }
   }
