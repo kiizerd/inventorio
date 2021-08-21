@@ -2,7 +2,7 @@
 BIN = display_gnu
 
 # Flags
-CFLAGS += -std=c99 -pedantic -O2
+CFLAGS += -std=c99 -pedantic -O2 -g
 
 SRC = src/display_gnu.c
 OBJ = $(SRC:.c=.o)
